@@ -9,13 +9,13 @@ const router = new express.Router();
 
 /** GET / => list of companies.
  *
- * =>  {companies: [{code, name}, {code, name}, ...]}
- *
+ * =>  {companies: [{code, name, description}, {code, name, description}, ...]}
  */
+
 router.get("/", async (req, res, next) => {
   try {
     const result = await db.query(
-      `SELECT code, name 
+      `SELECT code, name, description 
        FROM companies 
        ORDER BY name`
     );
@@ -29,8 +29,8 @@ router.get("/", async (req, res, next) => {
 /** GET /[code] => detail on company
  *
  * =>  {company: {code, name, description, invoices: [id, ...]}}
- *
  */
+
 router.get("/:code", async (req, res, next) => {
   try {
     const { code } = req.params;
@@ -54,9 +54,7 @@ router.get("/:code", async (req, res, next) => {
     }
 
     const company = compResult.rows[0];
-    const invoices = invResult.rows.map(inv => inv.id);
-
-    company.invoices = invoices;
+    company.invoices = invResult.rows.map(inv => inv.id);
 
     return res.json({ company });
   } catch (err) {
@@ -67,8 +65,8 @@ router.get("/:code", async (req, res, next) => {
 /** POST / => add new company
  *
  * {name, description}  =>  {company: {code, name, description}}
- *
  */
+
 router.post("/", async (req, res, next) => {
   try {
     const { name, description } = req.body;
@@ -90,8 +88,8 @@ router.post("/", async (req, res, next) => {
 /** PUT /[code] => update company
  *
  * {name, description}  =>  {company: {code, name, description}}
- *
  */
+
 router.put("/:code", async (req, res, next) => {
   try {
     const { name, description } = req.body;
@@ -107,9 +105,9 @@ router.put("/:code", async (req, res, next) => {
 
     if (result.rows.length === 0) {
       throw new ExpressError(`No such company: ${code}`, 404);
-    } else {
-      return res.json({ company: result.rows[0] });
     }
+
+    return res.json({ company: result.rows[0] });
   } catch (err) {
     return next(err);
   }
@@ -118,8 +116,8 @@ router.put("/:code", async (req, res, next) => {
 /** DELETE /[code] => delete company
  *
  * => {status: "deleted"}
- *
  */
+
 router.delete("/:code", async (req, res, next) => {
   try {
     const { code } = req.params;
@@ -133,9 +131,9 @@ router.delete("/:code", async (req, res, next) => {
 
     if (result.rows.length === 0) {
       throw new ExpressError(`No such company: ${code}`, 404);
-    } else {
-      return res.json({ status: "deleted" });
     }
+
+    return res.json({ status: "deleted" });
   } catch (err) {
     return next(err);
   }
